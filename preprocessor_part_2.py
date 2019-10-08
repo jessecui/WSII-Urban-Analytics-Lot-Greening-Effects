@@ -1,9 +1,15 @@
-# Import shape files data from Census Bureau data and clean them
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Import shape files data from Census Bureau data and clean them
+
+@author: jessecui
+"""
+
 
 import pandas as pd
 
 # Import basic crime data
-crime_df = pd.read_csv("data/crime.csv")
 greened_lots_df = pd.read_csv("data/greened_lots.csv")
 vacant_lots_df = pd.read_csv("data/vacant_lots.csv")
 

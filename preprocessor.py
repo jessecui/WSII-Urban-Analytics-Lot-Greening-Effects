@@ -1,4 +1,10 @@
-# Preprocesses basic data from crime and lots datasets and clean them
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Preprocesses basic data from crime and lots datasets and clean them
+
+@author: jessecui
+"""
 
 import pandas as pd
 import json
