@@ -61,9 +61,11 @@ land_data_df_core = land_data_df[['zone', 'geometry']]
 df_geometry_list = land_data_df_core.groupby('zone')['geometry'].apply(list).reset_index(name='geometries')
 df_geometry_list['counts'] = df_geometry_list.apply(lambda row: len(row.geometries), axis=1)
 
+merged_geometry_list = []
 for index, row in df_geometry_list.iterrows():
     print(row.zone)    
-    row['merged_geometry'] = cascaded_union(row.geometries)
+    merged_geometry_list = cascaded_union(row.geometries)
+row['merged_geometry'] = merged_geometry_list 
 
 # Import basic lots data
 print("STEP 2: Assigning land areas to greened lots")
