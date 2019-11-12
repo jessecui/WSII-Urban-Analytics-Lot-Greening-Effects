@@ -10,6 +10,7 @@ from shapely.geometry import MultiPolygon, Polygon
 from shapely.ops import cascaded_union
 import shapefile
 import geopy.distance
+from shapely import wkt
 
 # Helper function to plot circle around coordinate point
 from functools import partial
@@ -61,32 +62,42 @@ land_data_df_core = land_data_df[['zone', 'geometry']]
 df_geometry_list = land_data_df_core.groupby('zone')['geometry'].apply(list).reset_index(name='geometries')
 df_geometry_list['counts'] = df_geometry_list.apply(lambda row: len(row.geometries), axis=1)
 
+print(df_geometry_list['counts'])
+
 merged_geometry_list = []
 for index, row in df_geometry_list.iterrows():
     print(row.zone)    
-    merged_geometry_list = cascaded_union(row.geometries)
-row['merged_geometry'] = merged_geometry_list 
+    if row.zone=='Residential':
+        merged_geometry_list.append(0)
+    else:    
+        merged_geometry_list.append(cascaded_union(row.geometries))
+
+df_geometry_list['merged_geometry'] = merged_geometry_list 
+
+df_geometry_list.to_csv("data/processed_data/geometry_list_1.csv")
 
 # Import basic lots data
 print("STEP 2: Assigning land areas to greened lots")
+df_geometry_list = pd.read_csv("data/processed_data/geometry_list_1.csv")
 greened_lots_df = pd.read_csv("data/raw_data/greened_lots.csv")
 greened_lots_df_core = greened_lots_df[['id', 'lon', 'lat']]
 
-zone_index = 1
-
-for zone_index in range(df_geometry_list.zone.count()):    
-    zone_name = df_geometry_list.iloc[zone_index].zone
+for zone_index in range(df_geometry_list.zone.count()):        
+    zone_name = df_geometry_list.iloc[zone_index].zone    
     print(zone_name)
-    zone_shape = df_geometry_list.iloc[zone_index].merged_geometry
+    if zone_name == 'Residential':
+        continue
+    zone_shape = wkt.loads(df_geometry_list.iloc[zone_index].merged_geometry)
     zone_areas = []    
     # Iterate through lots and append the necessary 
     for lot_index, lot_row in greened_lots_df_core.iterrows():
-        if lot_index % 100 == 0:
-            print(lot_index)
+        if lot_index % 50 == 0:
+            print(zone_name, ': ', lot_index)
         radius = Polygon(geodesic_point_buffer(lot_row.lat, lot_row.lon, .2))        
         try:
             zone_areas.append(radius.intersection(zone_shape).area)
         except:
+            print("INTERSECTION ERROR")
             zone_areas.append(0)
     greened_lots_df_core[zone_name] = zone_areas
     
