@@ -1,21 +1,21 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """
-Preprocesses land use data and groups each lot into said lot group
+Created on Tue Nov 12 22:20:47 2019
+
+@author: jessecui
+
+Finds the areas of land use plot types for each vacant/greened lot
 """
 
 import pandas as pd
-import geopandas as gpd
-from shapely.geometry import MultiPolygon, Polygon
-from shapely.ops import cascaded_union
-import shapefile
-import geopy.distance
 from shapely import wkt
 
 # Helper function to plot circle around coordinate point
 from functools import partial
 import pyproj
 from shapely.ops import transform
+from shapely.geometry import Polygon
 from shapely.geometry import Point
 
 proj_wgs84 = pyproj.Proj(init='epsg:4326')
@@ -29,52 +29,6 @@ def geodesic_point_buffer(lat, lon, km):
         proj_wgs84)
     buf = Point(0, 0).buffer(km * 1000)  # distance in metres
     return transform(project, buf).exterior.coords[:]
-
-print("STEP 0: Reading data")
-# Import land use data
-land_data_df = gpd.read_file("data/shape_files/Land_Use/land_use.shp")
-
-# Create a dictionary of each land use c_dig2 to it's group type
-zone_groups = {}
-zone_groups[11] = 'Residential'
-zone_groups[12] = 'Residential'
-zone_groups[13] = 'Residential'
-zone_groups[21] = 'Commercial'
-zone_groups[22] = 'Commercial'
-zone_groups[23] = 'Commercial'
-zone_groups[31] = 'Industrial'
-zone_groups[41] = 'Civic/Inst'
-zone_groups[51] = 'Transportation'
-zone_groups[52] = 'Transportation'
-zone_groups[61] = 'Cultural/Park'
-zone_groups[62] = 'Cultural/Park'
-zone_groups[71] = 'Cultural/Park'
-zone_groups[72] = 'Cultural/Park'
-zone_groups[81] = 'Water'
-zone_groups[91] = 'Vacant'
-zone_groups[92] = 'Other/Unknown'
-
-# Aggregate the polygons in each zone together
-print("STEP 1: Aggregating Polygons in zones together")
-land_data_df['zone'] = land_data_df.apply(lambda row: zone_groups[row.c_dig2], axis=1)
-land_data_df_core = land_data_df[['zone', 'geometry']]
-
-df_geometry_list = land_data_df_core.groupby('zone')['geometry'].apply(list).reset_index(name='geometries')
-df_geometry_list['counts'] = df_geometry_list.apply(lambda row: len(row.geometries), axis=1)
-
-print(df_geometry_list['counts'])
-
-merged_geometry_list = []
-for index, row in df_geometry_list.iterrows():
-    print(row.zone)    
-    if row.zone=='Residential':
-        merged_geometry_list.append(0)
-    else:    
-        merged_geometry_list.append(cascaded_union(row.geometries))
-
-df_geometry_list['merged_geometry'] = merged_geometry_list 
-
-df_geometry_list.to_csv("data/processed_data/geometry_list_1.csv")
 
 # Import basic lots data
 print("STEP 2: Assigning land areas to greened lots")
@@ -102,5 +56,4 @@ for zone_index in range(df_geometry_list.zone.count()):
     greened_lots_df_core[zone_name] = zone_areas
     
 greened_lots_df_core.to_csv("data/processed_data/greened_lots_with_land_use.csv")
-    
     
