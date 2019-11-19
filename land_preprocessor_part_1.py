@@ -6,6 +6,7 @@ Consolidates land use plots into specified groups (and also merges them)
 
 import geopandas as gpd
 from shapely.ops import cascaded_union
+from shapely.geometry import MultiPolygon
 import pickle
 
 print("STEP 1: Reading data")
@@ -44,15 +45,23 @@ print(df_geometry_list[['zone', 'counts']])
 
 print("STEP 3: Cascade Unioning the Zones Together (except Residential)")
 for index, row in df_geometry_list.iterrows():
-    if index != 6:
-        continue    
-    else:    
-        print(row.zone)    
-        unioned_data = cascaded_union(row.geometries)
-        file_string = "data/processed_data/Land_Use/Land_Categories/merged_"+row.zone[:3]+str(index)+"_shape.pickle"
-        with open(file_string , 'wb') as handle:
-            pickle.dump(unioned_data , handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print(row.zone)    
+    unioned_data = cascaded_union(row.geometries)
+    file_string = "data/processed_data/Land_Use/Land_Categories/merged_"+row.zone[:3]+str(index)+"_shape.pickle"
+    with open(file_string , 'wb') as handle:
+        pickle.dump(unioned_data , handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+print("STEP 4: Taking the data and merging them together")
+df_geometry_list = df_geometry_list.drop(['geometries'], axis=1)
 
+merged_data_to_add = []
+for index, row in df_geometry_list.iterrows():
+    print(row.zone)
+    file_string = "data/processed_data/Land_Use/Land_Categories/merged_"+row.zone[:3]+str(index)+"_shape.pickle"
+    with open(file_string, "rb") as input_file:
+        merged_data = pickle.load(input_file)
+    merged_data_to_add.append(merged_data)
+    
+df_geometry_list['geometry'] = merged_data_to_add
 
-print("STEP 4: Cascade Unioning the Zones Together (just Residential)")
+df_geometry_list.to_csv("data/processed_data/Land_Use/Land_Categories/zone_geometry_final.csv")
