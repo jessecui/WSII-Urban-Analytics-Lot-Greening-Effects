@@ -108,11 +108,3 @@ for lot_index, lot_row in greened_lots_df.iterrows():
             #print("CRIME PARSE ERROR 100 METERS")
     crime_100_meters_before.append(crimes_for_lot_before)
     crime_100_meters_after.append(crimes_for_lot_after)
-        
-        
-        
-
-
-geopy.distance.vincenty(coords_1, coords_2).meters
-
-viol_date
