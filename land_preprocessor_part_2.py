@@ -39,8 +39,6 @@ greened_lots_df_core = greened_lots_df[['id', 'lon', 'lat']]
 
 # Loop through the list of data for merged zones and find the areas
 for zone_index in range(df_geometry_list.zone.count()):
-    if zone_index == 5:
-        continue
     zone_name = df_geometry_list.iloc[zone_index].zone    
     print(zone_name)
     zone_shape = wkt.loads(df_geometry_list.iloc[zone_index].geometry)
