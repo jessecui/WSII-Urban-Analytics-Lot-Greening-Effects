@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Appends crime data to greened lots data based on distance and time
+Appends crime data to vacant lots data based on distance and time
 
 @author: jessecui
 """
@@ -10,6 +10,13 @@ import pandas as pd
 from shapely.geometry import Point, Polygon, shape
 import datetime
 import numpy as np
+import functools
+import operator
+
+def avg_datetime(series):
+    dt_min = series.min()
+    deltas = [x-dt_min for x in series]
+    return dt_min + functools.reduce(operator.add, deltas) / len(deltas)
 
 def add_years(d, years):
     """Return a date that's `years` years after the date (or datetime)
@@ -27,7 +34,12 @@ def add_years(d, years):
 print("STEP 1: Import Data")
 crime_df = pd.read_csv("data/raw_data/crime.csv")
 greened_lots_df = pd.read_csv("data/processed_data/greened_lots_with_block.csv")
-#vacant_lots_df = pd.read_csv("data/processed_data/vacant_lots_with_block.csv")
+vacant_lots_df = pd.read_csv("data/processed_data/vacant_lots_with_block.csv")
+
+#vacant_lots_df = vacant_lots_df.head(15000) 
+vacant_lots_df = vacant_lots_df.tail(13651) 
+
+print("STEP 2 : Prepare Data")
 
 # Preprocess the crimes to drop all unnecessary columns
 crime_df = crime_df[['dispatch_date', 'lat', 'lng', 'ucr_general', 'text_general_code']]
@@ -48,8 +60,25 @@ crime_df['dispatch_date'] = pd.to_datetime(crime_df['dispatch_date'])
 # Make sure lots data has date time settings for its date
 greened_lots_df['date_season_begin'] = pd.to_datetime(greened_lots_df['date_season_begin'])
 greened_lots_df = greened_lots_df[pd.notnull(greened_lots_df['date_season_begin'])] # Parse out all null entries
+greened_lots_df = greened_lots_df.dropna(subset=['date_season_begin'])
 
+# Take all greened lots in the crime range
 greened_lots_df = greened_lots_df[(greened_lots_df['date_season_begin'] > crime_df.dispatch_date.min()) & (greened_lots_df['date_season_begin'] < crime_df.dispatch_date.max())]
+
+# Find the average greened lots intervention time
+avg_date = pd.Timestamp((greened_lots_df.date_season_begin - greened_lots_df.date_season_begin.min()).mean() + greened_lots_df.date_season_begin.min())
+
+avg_date_upper_start = pd.Timestamp(avg_date + datetime.timedelta(days=180))
+avg_date_upper_end = pd.Timestamp(avg_date + datetime.timedelta(days=545))
+avg_date_lower_start = pd.Timestamp(avg_date - datetime.timedelta(days=545))
+avg_date_lower_end = pd.Timestamp(avg_date - datetime.timedelta(days=180))
+
+# Only take the relevant interval
+crime_df = crime_df[(((crime_df['dispatch_date'] > avg_date_upper_start) & (crime_df['dispatch_date'] < avg_date_upper_end)) | # 6-18 month after
+                         ((crime_df['dispatch_date'] > avg_date_lower_start) & (crime_df['dispatch_date'] < avg_date_lower_end)))] #6-18 month before
+
+
+# Preprocess the vacant lots data
 
 crime_100_meters_before = []
 crime_100_meters_after = []
@@ -58,9 +87,9 @@ crime_200_meters_after = []
 crime_500_meters_before = []
 crime_500_meters_after = []
 
-print("STEP 2: Determine crimes per lot")
+print("STEP 3: Determine crimes per lot")
 # Loop through the index data 
-for lot_index, lot_row in greened_lots_df.iterrows():
+for lot_index, lot_row in vacant_lots_df.iterrows():
     print("LOT INDEX: ", lot_index)
         
     # Initialize arrays for tracking crimes before and after greening intervention
@@ -70,20 +99,11 @@ for lot_index, lot_row in greened_lots_df.iterrows():
     crimes_200_for_lot_after = []
     crimes_500_for_lot_before = []
     crimes_500_for_lot_after = []
-    
-    # Subset dataset on date    
-    lot_date = lot_row.date_season_begin.date()
-    lot_date_upper_start = pd.Timestamp(lot_date + datetime.timedelta(days=180))
-    lot_date_upper_end = pd.Timestamp(lot_date + datetime.timedelta(days=545))
-    lot_date_lower_start = pd.Timestamp(lot_date - datetime.timedelta(days=545))
-    lot_date_lower_end = pd.Timestamp(lot_date - datetime.timedelta(days=180))
         
     # Subset on the date range
-    lot_coord = (lot_row.lon, lot_row.lat)
+    lot_coord = (lot_row.lng, lot_row.lat)
     rel_crimes_df = crime_df[(crime_df['lat'] < lot_row.lat + 0.02) & (crime_df['lat'] > lot_row.lat - 0.02) & #approx 500 meters radius
-                             (crime_df['lng'] < lot_row.lon + 0.005) & (crime_df['lng'] > lot_row.lon - 0.005) & #approx 500 meters radius
-                             (((crime_df['dispatch_date'] > lot_date_upper_start) & (crime_df['dispatch_date'] < lot_date_upper_end)) | # 6-18 month after
-                             ((crime_df['dispatch_date'] > lot_date_lower_start) & (crime_df['dispatch_date'] < lot_date_lower_end)))] #6-18 month before
+                             (crime_df['lng'] < lot_row.lng + 0.005) & (crime_df['lng'] > lot_row.lng - 0.005)] #approx 500 meters radius
     print("SIZE: ", rel_crimes_df.shape[0])
     rel_crimes_df = rel_crimes_df.reset_index()
 
@@ -130,13 +150,13 @@ for lot_index, lot_row in greened_lots_df.iterrows():
     crime_500_meters_before.append(crimes_500_for_lot_before)
     crime_500_meters_after.append(crimes_500_for_lot_after)
     
-greened_lots_df["100_before"] = crime_100_meters_before
-greened_lots_df["100_after"] = crime_100_meters_after
-greened_lots_df["200_before"] = crime_200_meters_before
-greened_lots_df["200_after"] = crime_200_meters_after
-greened_lots_df["500_before"] = crime_500_meters_before
-greened_lots_df["500_after"] = crime_500_meters_after
+vacant_lots_df["100_before"] = crime_100_meters_before
+vacant_lots_df["100_after"] = crime_100_meters_after
+vacant_lots_df["200_before"] = crime_200_meters_before
+vacant_lots_df["200_after"] = crime_200_meters_after
+vacant_lots_df["500_before"] = crime_500_meters_before
+vacant_lots_df["500_after"] = crime_500_meters_after
     
-greened_lots_df.to_csv("data/processed_data/processed_greened_lots_with_crimes.csv")
+vacant_lots_df.to_csv("data/processed_data/processed_vacant_lots_with_crimes_2.csv")
     
 #geopy.distance.distance((-75.150, 40.05), (-75.151, 40.05)).meters
