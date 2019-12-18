@@ -10,7 +10,6 @@ Preprocess the greened lots dataset to one final dataset
 
 import pandas as pd
 import pickle
-from ast import literal_eval
 
 print("STEP 1: Process lots data")
 greened_lots_prop_df = pd.read_csv("data/raw_data/greened_lots.csv")
