@@ -8,6 +8,7 @@ Created on Mon Dec  2 23:05:10 2019
 
 import pandas as pd
 from ast import literal_eval
+import datetime
 
 print("STEP 1: Process the crime appended data")
 greened_with_crime_df = pd.read_csv("data/processed_data/processed_greened_lots_with_crimes.csv")
@@ -72,6 +73,8 @@ vacant_crime_df['nonviolent_500_after'] = vacant_crime_df.apply(lambda row: sum(
 vacant_crime_df = vacant_crime_df.drop(columns=['100_before', '100_after', '200_before', '200_after', '500_before', '500_after'])
 
 # Drop years 2006 and 2019
+vacant_crime_df['violationdate'] = pd.to_datetime(vacant_crime_df['violationdate'])
+vacant_crime_df['year'] = vacant_crime_df.apply(lambda row: row.violationdate.year, axis = 1)
 vacant_crime_df = vacant_crime_df[(vacant_crime_df['year'] != 2006) & (vacant_crime_df['year'] != 2019)]
 
-vacant_crime_df.to_csv("data/processed_data/greened_lots_crimes.csv")
+vacant_crime_df.to_csv("data/processed_data/vacant_lots_crimes_final.csv")
