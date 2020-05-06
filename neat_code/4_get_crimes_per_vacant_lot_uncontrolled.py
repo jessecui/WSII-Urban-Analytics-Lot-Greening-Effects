@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Mon Apr 20 16:53:07 2020
+
 Appends crime data to vacant lots data based on distance and time
+Uses the average greening date at the control date.
 
 @author: jessecui
 """
+
 import geopy.distance
 import pandas as pd
 from shapely.geometry import Point, Polygon, shape
@@ -32,12 +36,9 @@ def add_years(d, years):
 
 # Import Data
 print("STEP 1: Import Data")
-crime_df = pd.read_csv("data/raw_data/crime.csv")
-greened_lots_df = pd.read_csv("data/processed_data/greened_lots_with_block.csv")
-vacant_lots_df = pd.read_csv("data/processed_data/vacant_lots_with_block.csv")
-
-#vacant_lots_df = vacant_lots_df.head(15000) 
-vacant_lots_df = vacant_lots_df.tail(13651) 
+crime_df = pd.read_csv("../neat_data/cleaned_data/cleaned_crimes.csv")
+greened_lots_df = pd.read_csv("../neat_data/cleaned_data/cleaned_greened_lots.csv")
+vacant_lots_df = pd.read_csv("../neat_data/cleaned_data/cleaned_vacant_lots.csv")
 
 print("STEP 2 : Prepare Data")
 
@@ -158,5 +159,3 @@ vacant_lots_df["500_before"] = crime_500_meters_before
 vacant_lots_df["500_after"] = crime_500_meters_after
     
 vacant_lots_df.to_csv("../neat_data/processed_data/vacant_lots_unmatched_crimes.csv")
-    
-#geopy.distance.distance((-75.150, 40.05), (-75.151, 40.05)).meters

@@ -105,8 +105,8 @@ vacant_crime_df['nonviolent_500_after'] = vacant_crime_df.apply(lambda row: sum(
 vacant_crime_df = vacant_crime_df.drop(columns=['100_before', '100_after', '200_before', '200_after', '500_before', '500_after'])
 
 # Drop years 2006 and 2019
-vacant_crime_df['violationdate'] = pd.to_datetime(vacant_crime_df['violationdate'])
-vacant_crime_df['year'] = vacant_crime_df.apply(lambda row: row.violationdate.year, axis = 1)
+vacant_crime_df['match_greened_date'] = pd.to_datetime(vacant_crime_df['match_greened_date'])
+vacant_crime_df['year'] = vacant_crime_df.apply(lambda row: row.match_greened_date.year, axis = 1)
 vacant_crime_df = vacant_crime_df[(vacant_crime_df['year'] != 2006) & (vacant_crime_df['year'] != 2019)]
 
 vacant_crime_df.to_csv("data/processed_data/vacant_lots_crimes_matched_final.csv")
