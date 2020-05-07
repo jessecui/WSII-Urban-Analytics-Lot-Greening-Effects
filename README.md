@@ -24,6 +24,3 @@ Note some file paths may have changed since refactoring the code so double check
 
 ## Archived Code
 There is archived code in archived_old_code under the archive_folders_2019. This is code I wrote in Fall 2019, but contains code on how to process land use proportions per lot and how to create a large attributes dataset for greened and vacant lots.
-
-# Latex
-Analysis documentation and writeup is in latex_writeup, as well as the source latex code.
