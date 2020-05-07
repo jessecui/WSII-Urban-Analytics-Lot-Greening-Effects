@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Dec  2 23:05:10 2019
+Takes the output of crime parsers (the files beginning with 
+4_get_crimes_per.....lot.py) and counts up the total violent and
+non-violent crimes for each lot.
 
 @author: jessecui
 """

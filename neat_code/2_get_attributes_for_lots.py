@@ -3,8 +3,18 @@
 """
 Created on Wed Feb 26 00:29:01 2020
 
-Refer to final_preprocessor_part_1.py to learn how to get the other data
-This simply subsets that data to our refined data.
+This data creates a full attributes dataset for each lot. However,
+the bulk of this code assumes the dataset has already been made. The code
+to create this is in the archived_old_code folder, which was code I made
+in the fall semester of 2019.
+
+Refer to final_preprocessor_part_1.py and final_preprocessor_part_2.py in the 
+archived_old_code section to learn how to get the full attributes dataset. 
+
+To learn how to get the land zoning use attributes data,
+also refer to land_preprocessor_part_1.py, land_preprocessor_part_2.py,
+and land_preprocessor_part_3.py in the archived_old_code section.
+
 
 @author: jessecui
 """

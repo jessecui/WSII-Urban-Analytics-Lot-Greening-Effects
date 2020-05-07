@@ -3,7 +3,8 @@
 """
 Created on Tue Feb 25 19:13:36 2020
 
-Cleans the raw data for greened lots, vacant lots, and crimes
+Cleans the raw data for greened lots, vacant lots, and crimes and creates
+new cleaned datasets for each.
 
 @author: jessecui
 """
