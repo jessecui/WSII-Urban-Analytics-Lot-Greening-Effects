@@ -137,7 +137,7 @@ p11 <- ggplot(crimes_200m, aes(x=variable,y=value,fill=factor(greened))) +
   scale_fill_manual(values=c("royalblue1", "springgreen2"),
                     name="Lot Type",
                     labels=c("Untreated (Vacant)", "Treated (Greened)"))+
-  scale_x_discrete(labels=c("Violent Before", "Violent After", "Non-Violent Before", "Non-Violent After"))
+  scale_x_discrete(labels=c("Serious Crimes Before", "Serious Crimes After", "Other Crimes Before", "Other Crimes After"))
 p11
 ggsave("../analysis_results/images/crimes/chart_crimes_unmatched_200_meters.jpg")
 
@@ -189,6 +189,7 @@ p2
 ggsave("../analysis_results/images/lot_attributes/chart_inc_pov.jpg")
 
 # Economic Per Capita Income Data
+colnames(data)[27] <- "block_per_capita_income"
 econ_pci_data <- melt(data[c("block_per_capita_income","greened")], id="greened")
 p3 <- ggplot(econ_pci_data, aes(x=variable,y=value,fill=factor(greened))) +
   geom_boxplot() + 
@@ -203,7 +204,7 @@ p3
 ggsave("../analysis_results/images/lot_attributes/chart_pci.jpg")
 
 # Population Count
-pop_data <- melt(data[c("block_total_count","greened")], id="greened")
+pop_data <- melt(data[c("Total.","greened")], id="greened")
 p4 <- ggplot(pop_data, aes(x=variable,y=value,fill=factor(greened))) +
   geom_boxplot() + 
   labs(y="Population",x = "") + 
